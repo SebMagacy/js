@@ -1,4 +1,4 @@
-console.log("=== Zadanie 2 ===");
+console.log("=== Zadanie 1 ===");
 
 const imie = "Sebastian";
 const wiek = 25;
