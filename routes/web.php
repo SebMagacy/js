@@ -2,6 +2,6 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/lab1_zad12', function () {
+Route::get('/lab1_zad13', function () {
     return view('lab1');
 });
