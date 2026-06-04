@@ -13,7 +13,7 @@
         zakładki <strong>Console</strong>.</p>
     <p>Kod do zadań wpisuj w znaczniku <code>&lt;script&gt;</code> na dole
         pliku.</p>
-    <script src="{{ asset('js/lab1_zad6.js') }}"></script>
+    <script src="{{ asset('js/lab1_zad7.js') }}"></script>
 </body>
 
 </html>
