@@ -1,3 +1,5 @@
+console.log("=== Zadanie 2 ===");
+
 const imie = "Sebastian";
 const wiek = 25;
 const czyStudent = true;
