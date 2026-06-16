@@ -1,6 +1,6 @@
 import './bootstrap';
 
 import { createApp } from 'vue';
-import App from './components/Zadanie5.vue';
+import App from './components/Zadanie6.vue';
 
 createApp(App).mount('#app');
