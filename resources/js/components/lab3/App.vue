@@ -1,96 +1,100 @@
 <template>
-        <h1>Zadanie 5</h1>
+<h1>Zadanie 6</h1>
     <div class="box">
-        <h3>Aplikacja produktów</h3>
 
-        <ProductForm @add-product="addProduct" />
+        <h3>Koszyk zakupowy</h3>
 
-        <div class="filters">
-            <input
-                v-model="search"
-                type="text"
-                placeholder="Szukaj produktu po nazwie"
-            >
+        <ProductList
+            :products="products"
+            @add-to-cart="addToCart"
+        />
 
-            <select v-model="availabilityFilter">
-                <option value="all">Wszystkie</option>
-                <option value="available">Dostępne</option>
-                <option value="unavailable">Niedostępne</option>
-            </select>
+        <h3>Koszyk</h3>
+
+        <p v-if="cart.length === 0" class="empty">
+            Koszyk jest pusty.
+        </p>
+
+        <div v-else>
+            <CartItem
+                v-for="item in cart"
+                :key="item.id"
+                :item="item"
+                @increase="increaseQuantity"
+                @decrease="decreaseQuantity"
+                @remove="removeFromCart"
+            />
+
+            <div class="summary">
+                Łączna wartość koszyka:
+                <strong>{{ totalPrice }} zł</strong>
+            </div>
         </div>
-
-        <div class="stats">
-            <p>
-                Liczba wszystkich produktów:
-                <strong>{{ products.length }}</strong>
-            </p>
-
-            <p>
-                Liczba widocznych produktów:
-                <strong>{{ filteredProducts.length }}</strong>
-            </p>
-        </div>
-
-        <template v-if="filteredProducts.length === 0">
-            <p class="empty">
-                Brak produktów spełniających kryteria filtrowania.
-            </p>
-        </template>
-
-        <template v-else>
-            <ProductList :products="filteredProducts" />
-        </template>
     </div>
 </template>
 
 <script>
-import ProductForm from './components/ProductForm.vue'
 import ProductList from './components/ProductList.vue'
+import CartItem from './components/CartItem.vue'
 
 export default {
     components: {
-        ProductForm,
-        ProductList
+        ProductList,
+        CartItem
     },
 
     data() {
         return {
-            search: '',
-            availabilityFilter: 'all',
-            nextId: 4,
             products: [
-                { id: 1, name: 'Laptop', price: 3500, available: true },
-                { id: 2, name: 'Mysz', price: 80, available: true },
-                { id: 3, name: 'Klawiatura', price: 150, available: false }
-            ]
+                { id: 1, name: 'Laptop', price: 3500 },
+                { id: 2, name: 'Mysz', price: 80 },
+                { id: 3, name: 'Klawiatura', price: 150 },
+                { id: 4, name: 'Monitor', price: 900 }
+            ],
+            cart: []
         }
     },
 
     computed: {
-        filteredProducts() {
-            return this.products.filter(product => {
-                const matchesName = product.name
-                    .toLowerCase()
-                    .includes(this.search.toLowerCase())
-
-                const matchesAvailability =
-                    this.availabilityFilter === 'all'
-                    || (this.availabilityFilter === 'available' && product.available)
-                    || (this.availabilityFilter === 'unavailable' && !product.available)
-
-                return matchesName && matchesAvailability
-            })
+        totalPrice() {
+            return this.cart.reduce((sum, item) => {
+                return sum + item.price * item.quantity
+            }, 0)
         }
     },
 
     methods: {
-        addProduct(product) {
-            this.products.push({
-                id: this.nextId,
-                ...product
-            })
+        addToCart(product) {
+            const existingProduct = this.cart.find(item => item.id === product.id)
 
-            this.nextId++
+            if (existingProduct) {
+                existingProduct.quantity++
+            } else {
+                this.cart.push({
+                    ...product,
+                    quantity: 1
+                })
+            }
+        },
+
+        increaseQuantity(id) {
+            const product = this.cart.find(item => item.id === id)
+
+            if (product) {
+                product.quantity++
+            }
+        },
+
+        decreaseQuantity(id) {
+            const product = this.cart.find(item => item.id === id)
+
+            if (product && product.quantity > 1) {
+                product.quantity--
+            }
+        },
+
+        removeFromCart(id) {
+            this.cart = this.cart.filter(item => item.id !== id)
         }
     }
 }

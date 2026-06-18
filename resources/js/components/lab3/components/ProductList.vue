@@ -1,23 +1,33 @@
 <template>
-    <ul class="product-list">
-        <ProductItem
+    <div>
+        <h3>Lista produktów</h3>
+
+        <div
             v-for="product in products"
             :key="product.id"
-            :product="product"
-        />
-    </ul>
+            class="product"
+        >
+            <div>
+                <strong>{{ product.name }}</strong>
+                <p>{{ product.price }} zł</p>
+            </div>
+
+            <button @click="$emit('add-to-cart', product)">
+                Dodaj do koszyka
+            </button>
+        </div>
+    </div>
 </template>
 
 <script>
-import ProductItem from './ProductItem.vue'
-
 export default {
-    components: {
-        ProductItem
+    props: {
+        products: {
+            type: Array,
+            required: true
+        }
     },
 
-    props: {
-        products: Array
-    }
+    emits: ['add-to-cart']
 }
 </script>
