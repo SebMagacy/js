@@ -1,74 +1,79 @@
 <template>
-<h1>Zadanie 1</h1>
-    <div class="box">
+    <div class="container">
+        <h1>Zadanie 2 - Zarządzanie postami</h1>
 
-        <h3>Użytkownicy z API</h3>
+        <PostForm @add-post="addPost" />
 
-        <input
-            v-model="search"
-            type="text"
-            placeholder="Wpisz nazwę użytkownika"
-        >
-
-        <p v-if="loading">Ładowanie danych...</p>
-        <p v-if="error" class="error">{{ error }}</p>
-
-        <p v-if="!loading && !error && filteredUsers.length === 0">
-            Brak wyników
+        <PostList :posts="posts" @deletePost="deletePost" />
+        <p v-if="error" class="error">
+            {{ error }}
         </p>
-
-        <ul v-if="!loading && !error && filteredUsers.length > 0">
-            <li v-for="user in filteredUsers" :key="user.id">
-                <strong>{{ user.name }}</strong><br>
-                Email: {{ user.email }}<br>
-                Miasto: {{ user.address.city }}
-            </li>
-        </ul>
     </div>
 </template>
 
 <script>
+import PostForm from './components/PostForm.vue'
+import PostList from './components/PostList.vue'
+
+const API_URL = 'https://jsonplaceholder.typicode.com/posts'
+
 export default {
+    components: {
+        PostForm,
+        PostList
+    },
+
     data() {
         return {
-            users: [],
-            search: '',
-            loading: false,
-            error: ''
+            posts: []
         }
     },
 
     mounted() {
-        this.loadUsers()
-    },
-
-    computed: {
-        filteredUsers() {
-            return this.users.filter(user =>
-                user.name.toLowerCase().includes(this.search.toLowerCase())
-            )
-        }
+        this.loadPosts()
     },
 
     methods: {
-        async loadUsers() {
-            this.loading = true
-            this.error = ''
+        async loadPosts() {
+            const response = await fetch(API_URL)
+            const data = await response.json()
 
-            try {
-                const response = await fetch('https://jsonplaceholder.typicode.com/users')
+            this.posts = data.slice(0, 10)
+        },
 
-                if (!response.ok) {
-                    throw new Error('Błąd HTTP: ' + response.status)
-                }
+        async addPost(post) {
+            const response = await fetch(API_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(post)
+            })
 
-                this.users = await response.json()
-            } catch (error) {
-                this.error = 'Nie udało się pobrać użytkowników'
-            } finally {
-                this.loading = false
-            }
+            const newPost = await response.json()
+
+            this.posts.unshift(newPost)
+        },
+
+        async deletePost(postId) {
+            await fetch(`${API_URL}/${postId}`, {
+                method: 'DELETE'
+            })
+
+            this.posts = this.posts.filter(post => post.id !== postId)
         }
     }
 }
 </script>
+<style scoped>
+.container {
+    max-width: 900px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 25px;
+}
+</style>
