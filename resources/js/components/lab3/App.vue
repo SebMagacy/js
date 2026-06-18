@@ -1,30 +1,14 @@
 <template>
-    <main class="container py-4">
-        <h1 class="text-xl font-semibold">Zadanie 2</h1>
-
-        <UserCard
-            name="Anna"
-            :age="21"
-            city="Częstochowa"
-            :is-student="true"
-        />
-
-        <UserCard
-            name="Jan"
-            :age="24"
-            :is-student="false"
-        />
-    </main>
+    <h1 class="text-xl font-semibold">Zadanie 3</h1>
+    <ContactForm />
 </template>
 
 <script>
-import UserCard from './components/UserCard.vue'
+import ContactForm from './components/ContactForm.vue'
 
 export default {
-    name: 'App',
-
     components: {
-        UserCard
+        ContactForm
     }
 }
 </script>
