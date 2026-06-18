@@ -1,101 +1,97 @@
 <template>
-<h1 class="text-xl font-semibold">Zadanie 4</h1>
+        <h1>Zadanie 5</h1>
     <div class="box">
+        <h3>Aplikacja produktów</h3>
 
-        <p class="counter">Licznik: {{ count }}</p>
+        <ProductForm @add-product="addProduct" />
 
-        <p :class="statusClass">
-            {{ counterStatus }}
-        </p>
+        <div class="filters">
+            <input
+                v-model="search"
+                type="text"
+                placeholder="Szukaj produktu po nazwie"
+            >
 
-        <CounterButtons
-            @increment="increment"
-            @decrement="decrement"
-            @reset="resetCounter"
-        />
+            <select v-model="availabilityFilter">
+                <option value="all">Wszystkie</option>
+                <option value="available">Dostępne</option>
+                <option value="unavailable">Niedostępne</option>
+            </select>
+        </div>
+
+        <div class="stats">
+            <p>
+                Liczba wszystkich produktów:
+                <strong>{{ products.length }}</strong>
+            </p>
+
+            <p>
+                Liczba widocznych produktów:
+                <strong>{{ filteredProducts.length }}</strong>
+            </p>
+        </div>
+
+        <template v-if="filteredProducts.length === 0">
+            <p class="empty">
+                Brak produktów spełniających kryteria filtrowania.
+            </p>
+        </template>
+
+        <template v-else>
+            <ProductList :products="filteredProducts" />
+        </template>
     </div>
 </template>
 
 <script>
-import CounterButtons from './components/CounterButtons.vue'
+import ProductForm from './components/ProductForm.vue'
+import ProductList from './components/ProductList.vue'
 
 export default {
-    name: 'App',
     components: {
-        CounterButtons
+        ProductForm,
+        ProductList
     },
+
     data() {
         return {
-            count: 0
+            search: '',
+            availabilityFilter: 'all',
+            nextId: 4,
+            products: [
+                { id: 1, name: 'Laptop', price: 3500, available: true },
+                { id: 2, name: 'Mysz', price: 80, available: true },
+                { id: 3, name: 'Klawiatura', price: 150, available: false }
+            ]
         }
     },
+
     computed: {
-        counterStatus() {
-            if (this.count > 0) {
-                return 'Wartość dodatnia'
-            }
+        filteredProducts() {
+            return this.products.filter(product => {
+                const matchesName = product.name
+                    .toLowerCase()
+                    .includes(this.search.toLowerCase())
 
-            if (this.count < 0) {
-                return 'Wartość ujemna'
-            }
+                const matchesAvailability =
+                    this.availabilityFilter === 'all'
+                    || (this.availabilityFilter === 'available' && product.available)
+                    || (this.availabilityFilter === 'unavailable' && !product.available)
 
-            return 'Zero'
-        },
-        statusClass() {
-            if (this.count > 0) {
-                return 'positive'
-            }
-
-            if (this.count < 0) {
-                return 'negative'
-            }
-
-            return 'zero'
+                return matchesName && matchesAvailability
+            })
         }
     },
+
     methods: {
-        increment() {
-            this.count++
-        },
-        decrement() {
-            this.count--
-        },
-        resetCounter() {
-            this.count = 0
+        addProduct(product) {
+            this.products.push({
+                id: this.nextId,
+                ...product
+            })
+
+            this.nextId++
         }
     }
 }
 </script>
-
-<style scoped>
-.box {
-    max-width: 500px;
-    margin: 40px auto;
-    padding: 25px;
-    border-radius: 12px;
-    background: #f8f9fa;
-    border: 1px solid #dee2e6;
-    text-align: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.counter {
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.positive {
-    color: #198754;
-    font-weight: bold;
-}
-
-.negative {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.zero {
-    color: #6c757d;
-    font-weight: bold;
-}
-</style>
