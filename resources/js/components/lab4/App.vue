@@ -1,79 +1,163 @@
 <template>
     <div class="container">
-        <h1>Zadanie 2 - Zarządzanie postami</h1>
+        <h1>Zadanie 3 - Mini panel TODO</h1>
 
-        <PostForm @add-post="addPost" />
+        <p v-if="loading">Ładowanie zadań...</p>
 
-        <PostList :posts="posts" @deletePost="deletePost" />
         <p v-if="error" class="error">
             {{ error }}
         </p>
+
+        <div v-if="!loading && !error" class="todo-list">
+            <div
+                v-for="todo in todos"
+                :key="todo.id"
+                class="todo"
+                :class="todo.completed ? 'completed' : 'not-completed'"
+            >
+                <label class="todo-item">
+                    <input
+                        type="checkbox"
+                        :checked="todo.completed"
+                        @change="toggleTodo(todo)"
+                    >
+
+                    <span class="title">
+                        {{ todo.title }}
+                    </span>
+                </label>
+            </div>
+        </div>
     </div>
 </template>
 
 <script>
-import PostForm from './components/PostForm.vue'
-import PostList from './components/PostList.vue'
-
-const API_URL = 'https://jsonplaceholder.typicode.com/posts'
+const API_URL = 'https://jsonplaceholder.typicode.com/todos'
 
 export default {
-    components: {
-        PostForm,
-        PostList
-    },
-
     data() {
         return {
-            posts: []
+            todos: [],
+            loading: false,
+            error: ''
         }
     },
 
     mounted() {
-        this.loadPosts()
+        this.loadTodos()
     },
 
     methods: {
-        async loadPosts() {
-            const response = await fetch(API_URL)
-            const data = await response.json()
+        async loadTodos() {
+            this.loading = true
+            this.error = ''
 
-            this.posts = data.slice(0, 10)
+            try {
+                const response = await fetch(API_URL)
+
+                if (!response.ok) {
+                    throw new Error('Błąd pobierania danych')
+                }
+
+                const data = await response.json()
+                this.todos = data.slice(0, 15)
+            } catch (error) {
+                this.error = 'Nie udało się pobrać zadań TODO'
+            } finally {
+                this.loading = false
+            }
         },
 
-        async addPost(post) {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(post)
-            })
+        async toggleTodo(todo) {
+            const newStatus = !todo.completed
 
-            const newPost = await response.json()
+            todo.completed = newStatus
 
-            this.posts.unshift(newPost)
-        },
-
-        async deletePost(postId) {
-            await fetch(`${API_URL}/${postId}`, {
-                method: 'DELETE'
-            })
-
-            this.posts = this.posts.filter(post => post.id !== postId)
+            try {
+                await fetch(`${API_URL}/${todo.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        completed: newStatus
+                    })
+                })
+            } catch (error) {
+                todo.completed = !newStatus
+                this.error = 'Nie udało się zaktualizować zadania'
+            }
         }
     }
 }
 </script>
+
 <style scoped>
 .container {
     max-width: 900px;
-    margin: 30px auto;
+    margin: 40px auto;
     padding: 20px;
 }
 
 h1 {
-    text-align: center;
-    margin-bottom: 25px;
+    margin-bottom: 20px;
+}
+
+.todo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.todo {
+    padding: 16px 20px;
+    border-radius: 10px;
+    transition: 0.2s;
+}
+
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    cursor: pointer;
+}
+
+.todo-item input {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.title {
+    flex: 1;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+.completed {
+    background: #e8f5e9;
+    border-left: 5px solid #198754;
+}
+
+.completed .title {
+    color: #146c43;
+    text-decoration: line-through;
+}
+
+.not-completed {
+    background: #fff5f5;
+    border-left: 5px solid #dc3545;
+}
+
+.not-completed .title {
+    color: #333;
+}
+
+.error {
+    color: #dc3545;
+    font-weight: bold;
 }
 </style>
